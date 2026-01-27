@@ -1,0 +1,12 @@
+[33medea3b5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mMobile-Lead[m[33m)[m HEAD@{0}: reset: moving to HEAD~2
+[33m6ac89e4[m HEAD@{1}: reset: moving to HEAD
+[33m6ac89e4[m HEAD@{2}: revert: Revert "Remove build artifacts and update gitignore"
+[33m738c5e4[m HEAD@{3}: commit: Remove build artifacts and update gitignore
+[33medea3b5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mMobile-Lead[m[33m)[m HEAD@{4}: commit: Add web build for deployment
+[33m0861d3a[m HEAD@{5}: commit: Created web app for online hosting
+[33mc3ea34d[m HEAD@{6}: commit: Add gitignore
+[33m01af297[m[33m ([m[1;31morigin/Mobile-Lead[m[33m, [m[1;31morigin/Gemini-Lead[m[33m)[m HEAD@{7}: checkout: moving from mobile_lead to Mobile-Lead
+[33m6bca027[m[33m ([m[1;32mmobile_lead[m[33m)[m HEAD@{8}: pull --rebase origin mobile_lead (finish): returning to refs/heads/mobile_lead
+[33m6bca027[m[33m ([m[1;32mmobile_lead[m[33m)[m HEAD@{9}: pull --rebase origin mobile_lead (pick): Added a required location field, a Severity button. Created buttons for attaching media(with options for taking both photo and video and video too) and recording audio
+[33m4f2e772[m HEAD@{10}: pull --rebase origin mobile_lead (start): checkout 4f2e7725ce1159e218c0be284a2e7cb304f20671
+[33m766f462[m HEAD@{11}: commit (initial): Added a required location field, a Severity button. Created buttons for attaching media(with options for taking both photo and video and video too) and recording audio
