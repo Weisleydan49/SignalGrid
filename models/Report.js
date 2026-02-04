@@ -4,7 +4,7 @@ let report_schema = mongoose.Schema({
     user_id:{
         type: mongoose.Types.ObjectId,
         ref: "User",
-        required: true
+        required: false,
 
     },
     description: {
@@ -27,10 +27,10 @@ let report_schema = mongoose.Schema({
     //     type: mongoose.Types.ObjectId,
     //     ref: "Image",
     //     required: true
-    // }] ,  
+    // }] ,
     location: {
-      type: String,
-      required: true
+        type: String,
+        required: true
     
     },
     created_at: {

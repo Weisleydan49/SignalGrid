@@ -7,8 +7,8 @@ let event_schema = mongoose.Schema({
         required: true
     },
     cluster_id: {
-         type: String,
-         required: true
+        type: String,
+        required: true
     },
 
     event_type: {

@@ -1,30 +1,34 @@
-require("dotenv").config(); 
-let mongoose = require('mongoose')
-let express = require('express')
+require("dotenv").config();
+const express = require('express');
 const bodyParser = require('body-parser');
-let routes = require("./routes/routes")
-const path = require('path')
-let cors = require("cors")
+const routes = require("./routes/routes");
+const cors = require("cors");
+const pool = require('./config/database'); // Import PostgreSQL connection
 
+// Initialize Express app
+const app = express();
+app.use(express.json());
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
+app.get('/', (req, res) => {
+    res.json({
+        message: 'Welcome to the SignalGrid Backend Lead API',
+        status: 'ok',
+        endpoints: {
+            users: '/api/users',
+            reports: '/api/reports',
+            briefs: '/api/briefs',
+            clusters: '/api/clusters',
+            generate_brief: '/api/generate-brief'
+        }
+    });
+});
+app.use("/api", routes);
 
-
-mongoose.connect("mongodb://localhost:27017/signalgrid_db",{ useNewUrlParser:true})
-.then(()=>{
-
-    // initialize Express app
-    let app = express()
-    app.use(express.json())
-    app.use(cors())
-    app.use(bodyParser.json())
-    app.use(bodyParser.urlencoded({extended: true}))
-    app.use("/api",routes)
-    app.listen(3008,()=>{
-        console.log("Your app is running at http://127.0.0.1:3008")
-    })
+// Start server
+app.listen(3008, '0.0.0.0', () => {
+    console.log("Your app is running at http://127.0.0.1:3008");
     console.log("Gemini key loaded:", !!process.env.GEMINI_API_KEY);
-
-
-
-  
-})
+});
