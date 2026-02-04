@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/report_model.dart';
 import '../models/event_model.dart';
 import '../models/cluster_model.dart';
 import '../models/brief_model.dart';
@@ -29,53 +29,68 @@ class ApiService {
   ///
   /// Returns: EventModel with extracted event data
   /// Throws: Exception on error
+  // ============================================================================
   Future<EventModel> submitReport(
-      String text,
-      String evidenceType, {
-        required String location,
-        required int severity,
-  }) async {
-    try {
-      // Validate input
-      final submission = ReportSubmission(
-        text: text,
-        evidenceType: evidenceType,
-        location: location,
-        severity: severity,
-      );
+    String text,
+    String evidenceType, {
+      required String location,
+      required int severity,
+      String? timeHint,
+      List<File>? mediaFiles,
+}) async {
+  try {
+    // Create multipart request for file uploads
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse(ApiConfig.reportsUrl),
+    );
 
-      final validationError = submission.getValidationError();
-      if (validationError != null) {
-        throw Exception(validationError);
+    // Add text fields - backend expects 'description' not 'text'
+    request.fields['description'] = text;
+    request.fields['evidence_type'] = evidenceType;
+    request.fields['location'] = location;
+    request.fields['severity'] = severity.toString();
+    request.fields['user_id'] = '1';
+    request.fields['time_hint'] = timeHint ?? 'just now';
+
+
+    // Add media files if provided
+    if (mediaFiles != null) {
+      for (var file in mediaFiles) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'media',
+            file.path,
+          ),
+        );
       }
-
-      // Make API call
-      final uri = Uri.parse(ApiConfig.reportsUrl);
-      final response = await _client
-          .post(
-        uri,
-        headers: _headers,
-        body: jsonEncode(submission.toJson()),
-      )
-          .timeout(_timeout);
-
-      // Handle response
-      if (response.statusCode == ApiConfig.statusOk || 
-          response.statusCode == ApiConfig.statusCreated) {
-        final data = jsonDecode(response.body);
-        return EventModel.fromJson(data);
-      } else {
-        final error = _parseError(response);
-        throw Exception('Failed to submit report: $error');
-      }
-    } catch (e) {
-      throw Exception('Error submitting report: ${e.toString()}');
     }
+
+    // Validate description is not empty
+    if (text.trim().isEmpty) {
+      throw Exception('Description is required');
+    }
+
+    // Send request
+    final streamedResponse = await request.send().timeout(_timeout);
+    final response = await http.Response.fromStream(streamedResponse);
+
+    // Handle response
+    if (response.statusCode == ApiConfig.statusOk ||
+        response.statusCode == ApiConfig.statusCreated) {
+      final data = jsonDecode(response.body);
+      return EventModel.fromJson(data);
+    } else {
+      final error = _parseError(response);
+      throw Exception('Failed to submit report: $error');
+    }
+  } catch (e) {
+    throw Exception('Error submitting report: ${e.toString()}');
   }
+}
 
   // ============================================================================
   // AI CYCLE ENDPOINTS
-  // ============================================================================
 
   /// Trigger AI cycle (clustering + brief generation)
   /// POST /api/cycle/run
@@ -92,7 +107,7 @@ class ApiService {
       )
           .timeout(_timeout);
 
-      if (response.statusCode == ApiConfig.statusOk || 
+      if (response.statusCode == ApiConfig.statusOk ||
           response.statusCode == ApiConfig.statusCreated) {
         final data = jsonDecode(response.body);
         
@@ -196,8 +211,8 @@ class ApiService {
           .timeout(_timeout);
 
       if (response.statusCode == ApiConfig.statusOk) {
-        final data = jsonDecode(response.body);
-        return BriefModel.fromJson(data);
+        final List<dynamic> data = jsonDecode(response.body);
+        return BriefModel.fromJson(data.first);
       } else if (response.statusCode == ApiConfig.statusNotFound) {
         throw Exception('No briefs available yet');
       } else {

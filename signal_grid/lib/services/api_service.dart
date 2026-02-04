@@ -21,7 +21,7 @@ class ApiService {
   };
 
   // ============================================================================
-  // REPORT ENDPOINTS
+                               // REPORT ENDPOINTS
   // ============================================================================
 
   /// Submit an incident report and get extracted event
@@ -29,12 +29,19 @@ class ApiService {
   ///
   /// Returns: EventModel with extracted event data
   /// Throws: Exception on error
-  Future<EventModel> submitReport(String text, String evidenceType) async {
+  Future<EventModel> submitReport(
+      String text,
+      String evidenceType, {
+        required String location,
+        required int severity,
+  }) async {
     try {
       // Validate input
       final submission = ReportSubmission(
         text: text,
         evidenceType: evidenceType,
+        location: location,
+        severity: severity,
       );
 
       final validationError = submission.getValidationError();

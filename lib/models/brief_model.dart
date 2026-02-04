@@ -20,27 +20,32 @@ class BriefModel {
   });
 
   factory BriefModel.fromJson(Map<String, dynamic> json) {
-    final briefData = json['brief_json'] ?? json;
+  final briefData = json['brief_json'] ?? json;
 
-    return BriefModel(
-      id: json['_id'],
-      headline: briefData['headline'] ?? '',
-      whatChanged: (briefData['what_changed'] as List<dynamic>?)
-              ?.map((item) => item.toString())
-              .toList() ??
-          [],
-      topHotspots: (briefData['top_hotspots'] as List<dynamic>?)
-              ?.map((item) => item.toString())
-              .toList() ??
-          [],
-      watchNext: briefData['watch_next'] ?? '',
-      confidenceNotes: briefData['confidence_notes'],
-      createdAt: briefData['created_at'] != null
-          ? DateTime.parse(briefData['created_at'])
-          : DateTime.now(),
-      fullJson: briefData,
-    );
+  return BriefModel(
+    id: json['_id']?.toString(),
+    headline: briefData['headline'] ?? '',
+    whatChanged: _parseList(briefData['what_changed']),
+    topHotspots: _parseList(briefData['top_hotspots']),
+    watchNext: briefData['watch_next'] ?? '',
+    confidenceNotes: briefData['confidence_notes'],
+    createdAt: briefData['created_at'] != null
+        ? DateTime.parse(briefData['created_at'])
+        : DateTime.now(),
+    fullJson: briefData,
+  );
+}
+
+static List<String> _parseList(dynamic value) {
+  if (value == null) return [];
+  if (value is List) {
+    return value.map((item) => item.toString()).toList();
   }
+  if (value is String) {
+    return [value];
+  }
+  return [];
+}
 
   Map<String, dynamic> toJson() {
     return {

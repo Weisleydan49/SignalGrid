@@ -26,6 +26,7 @@ class _ReportScreenState extends State<ReportScreen> {
   final TextEditingController _textController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
   int _selectedSeverity = 3; //Default to Moderate
   final ImagePicker _imagePicker = ImagePicker();
   FlutterSoundRecorder? _audioRecorder;
@@ -107,6 +108,8 @@ class _ReportScreenState extends State<ReportScreen> {
         _selectedEvidenceType,
         location: _locationController.text,
         severity: _selectedSeverity,
+        timeHint: _timeController.text,
+        mediaFiles: _attachedFiles.isNotEmpty ? _attachedFiles : null,
       );
 
       // Show success
@@ -715,6 +718,15 @@ class _ReportScreenState extends State<ReportScreen> {
               ),
 
               const SizedBox(height: 24),
+
+              TextField(
+  controller: _timeController,
+  decoration: InputDecoration(
+    labelText: 'When did this happen?',
+    hintText: 'e.g., 10 minutes ago, now, 2pm today',
+    prefixIcon: Icon(Icons.schedule),
+  ),
+),
 
               //Severity Selector
               const Text(

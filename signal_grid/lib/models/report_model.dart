@@ -161,10 +161,14 @@ String getFormattedTime() {
 class ReportSubmission {
   final String text;
   final String evidenceType;
+  final String location;
+  final int severity;
 
   ReportSubmission({
     required this.text,
     required this.evidenceType,
+    required this.location,
+    required this.severity,
   });
 
   /// Convert to JSON for API submission
@@ -172,6 +176,8 @@ class ReportSubmission {
     return {
       'text': text,
       'evidence_type': evidenceType,
+      'location': location,
+      'severity': severity,
     };
   }
 
@@ -179,6 +185,8 @@ class ReportSubmission {
   bool isValid() {
     return text.trim().isNotEmpty &&
         evidenceType.isNotEmpty &&
+        location.trim().isNotEmpty &&
+        severity > 1 && severity <= 5 &&
         ['text', 'audio', 'image', 'video'].contains(evidenceType.toLowerCase());
   }
 
@@ -189,6 +197,12 @@ class ReportSubmission {
     }
     if (evidenceType.isEmpty) {
       return 'Evidence type must be specified';
+    }
+    if (location.trim().isEmpty) {
+      return 'Location is required';
+    }
+    if (severity < 1 || severity > 5) {
+      return 'Severity must be between 1 and 5';
     }
     if (!['text', 'audio', 'image', 'video'].contains(evidenceType.toLowerCase())) {
       return 'Invalid evidence type. Must be text, audio, image, or video';

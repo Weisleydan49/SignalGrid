@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/cluster_model.dart';
 import '../services/api_service.dart';
 import '../widgets/cluster_card.dart';
@@ -14,7 +15,10 @@ class MapListScreen extends StatefulWidget {
 
 class _MapListScreenState extends State<MapListScreen> {
   // View mode toggle
-  bool _isMapView = false; // Start with List View
+  bool _isMapView = false;
+
+  // Map controller
+  GoogleMapController? _mapController;
 
   // Data
   List<ClusterModel> _clusters = [];
@@ -35,6 +39,12 @@ class _MapListScreenState extends State<MapListScreen> {
   void initState() {
     super.initState();
     _loadClusters();
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
   }
 
   /// Load clusters from backend
@@ -60,7 +70,6 @@ class _MapListScreenState extends State<MapListScreen> {
 
   /// Trigger AI cycle
   Future<void> _runCycle() async {
-    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -83,14 +92,8 @@ class _MapListScreenState extends State<MapListScreen> {
 
     try {
       await _apiService.runCycle();
-
-      // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-
-      // Reload clusters
       await _loadClusters();
-
-      // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -100,10 +103,7 @@ class _MapListScreenState extends State<MapListScreen> {
         );
       }
     } catch (e) {
-      // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-
-      // Show error message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -115,7 +115,6 @@ class _MapListScreenState extends State<MapListScreen> {
     }
   }
 
-  /// Pull to refresh
   Future<void> _handleRefresh() async {
     await _loadClusters();
   }
@@ -126,7 +125,6 @@ class _MapListScreenState extends State<MapListScreen> {
       appBar: AppBar(
         title: const Text('Event Clusters'),
         actions: [
-          // View toggle button
           IconButton(
             icon: Icon(_isMapView ? Icons.list : Icons.map),
             tooltip: _isMapView ? 'Switch to List View' : 'Switch to Map View',
@@ -136,7 +134,6 @@ class _MapListScreenState extends State<MapListScreen> {
               });
             },
           ),
-          // Refresh button
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh',
@@ -173,11 +170,7 @@ class _MapListScreenState extends State<MapListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -200,18 +193,11 @@ class _MapListScreenState extends State<MapListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.inbox_outlined,
-              size: 64,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             const Text(
               'No clusters yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -232,13 +218,11 @@ class _MapListScreenState extends State<MapListScreen> {
     return _isMapView ? _buildMapView() : _buildListView();
   }
 
-  /// List View
   Widget _buildListView() {
     return RefreshIndicator(
       onRefresh: _handleRefresh,
       child: Column(
         children: [
-          // Summary header
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.blue.shade50,
@@ -262,11 +246,9 @@ class _MapListScreenState extends State<MapListScreen> {
               ],
             ),
           ),
-
-          // Clusters list
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.only(bottom: 80), // Space for FAB
+              padding: const EdgeInsets.only(bottom: 80),
               itemCount: _clusters.length,
               itemBuilder: (context, index) {
                 final cluster = _clusters[index];
@@ -286,51 +268,20 @@ class _MapListScreenState extends State<MapListScreen> {
     );
   }
 
-  /// Map View (placeholder - implement with google_maps_flutter or flutter_map)
+  /// Map View with Google Maps
   Widget _buildMapView() {
     return Stack(
       children: [
-        // Placeholder for map
-        Container(
-          color: Colors.grey[200],
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.map_outlined,
-                  size: 64,
-                  color: Colors.grey,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Map View',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Integrate Google Maps or Flutter Map here',
-                  style: TextStyle(color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _isMapView = false;
-                    });
-                  },
-                  child: const Text('Switch to List View'),
-                ),
-              ],
-            ),
+        GoogleMap(
+          initialCameraPosition: const CameraPosition(
+            target: LatLng(-1.286389, 36.817223), // Nairobi center
+            zoom: 11,
           ),
+          markers: _buildMarkers(),
+          onMapCreated: (controller) {
+            _mapController = controller;
+          },
         ),
-
-        // Cluster markers overlay (when map is implemented)
         Positioned(
           bottom: 16,
           left: 16,
@@ -350,7 +301,33 @@ class _MapListScreenState extends State<MapListScreen> {
     );
   }
 
-  /// Show cluster details in bottom sheet
+  /// Build map markers from clusters
+  Set<Marker> _buildMarkers() {
+    return _clusters.asMap().entries.map((entry) {
+      final index = entry.key;
+      final cluster = entry.value;
+      
+      // Spread clusters around Nairobi based on index
+      final lat = -1.286389 + (index * 0.02) - 0.05;
+      final lng = 36.817223 + (index * 0.02) - 0.05;
+      
+      return Marker(
+        markerId: MarkerId(cluster.clusterId),
+        position: LatLng(lat, lng),
+        infoWindow: InfoWindow(
+          title: cluster.label,
+          snippet: '${cluster.getSeverityDescription()} - ${cluster.relatedEventIds.length} reports',
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          cluster.isCritical() 
+            ? BitmapDescriptor.hueRed 
+            : BitmapDescriptor.hueOrange,
+        ),
+        onTap: () => _showClusterDetails(cluster),
+      );
+    }).toSet();
+  }
+
   void _showClusterDetails(ClusterModel cluster) {
     showModalBottomSheet(
       context: context,
@@ -371,7 +348,6 @@ class _MapListScreenState extends State<MapListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Handle bar
                   Center(
                     child: Container(
                       width: 40,
@@ -383,8 +359,6 @@ class _MapListScreenState extends State<MapListScreen> {
                       ),
                     ),
                   ),
-
-                  // Cluster ID and trend
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -422,10 +396,7 @@ class _MapListScreenState extends State<MapListScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Label
                   Text(
                     cluster.label,
                     style: const TextStyle(
@@ -433,10 +404,7 @@ class _MapListScreenState extends State<MapListScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
-                  // Severity and confidence
                   Row(
                     children: [
                       _buildBadge(
@@ -453,10 +421,7 @@ class _MapListScreenState extends State<MapListScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Summary
                   const Text(
                     'Summary',
                     style: TextStyle(
@@ -469,10 +434,7 @@ class _MapListScreenState extends State<MapListScreen> {
                     cluster.summary,
                     style: const TextStyle(fontSize: 16),
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Related events
                   const Text(
                     'Related Events',
                     style: TextStyle(
@@ -485,10 +447,7 @@ class _MapListScreenState extends State<MapListScreen> {
                     '${cluster.relatedEventIds.length} reports',
                     style: const TextStyle(color: Colors.grey),
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Last updated
                   Text(
                     'Last updated: ${cluster.getFormattedTime()}',
                     style: const TextStyle(

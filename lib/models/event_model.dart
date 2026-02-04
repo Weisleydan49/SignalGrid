@@ -27,21 +27,23 @@ class EventModel {
 
   /// Create EventModel from JSON response
   factory EventModel.fromJson(Map<String, dynamic> json) {
-    return EventModel(
-      id: json['_id'] ?? json['id'] ?? '',
-      reportId: json['report_id'] ?? '',
-      eventType: json['event_type'] ?? 'unknown',
-      locationHint: json['location_hint'] ?? 'Location not specified',
-      timeHint: json['time_hint'] ?? 'Time not specified',
-      severity: json['severity'] ?? 3,
-      confidence: (json['confidence'] ?? 0.5).toDouble(),
-      summary: json['summary'] ?? '',
-      extractedJson: json['extracted_json'],
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
-    );
-  }
+  return EventModel(
+    id: (json['_id'] ?? json['id'] ?? '').toString(),
+    reportId: (json['report_id'] ?? '').toString(),
+    eventType: json['event_type'] ?? 'unknown',
+    locationHint: json['location_hint'] ?? 'Location not specified',
+    timeHint: json['time_hint'] ?? 'Time not specified',
+    severity: json['severity'] ?? 3,
+    confidence: (json['confidence'] ?? 0.5).toDouble(),
+    summary: json['summary'] ?? '',
+    extractedJson: json['extracted_json'],
+    createdAt: json['created_at'] != null
+        ? (json['created_at'] is String
+            ? DateTime.parse(json['created_at'])
+            : DateTime.fromMillisecondsSinceEpoch(json['created_at']))
+        : DateTime.now(),
+  );
+}
 
   /// Convert EventModel to JSON
   Map<String, dynamic> toJson() {

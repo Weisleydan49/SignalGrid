@@ -9,7 +9,7 @@ class ApiConfig{
   // After deployment (when backend is live):
   //   - Replace with actual deployed URL "https://signalgrid-api.onrender.com"
 
-  static const String baseUrl = "http://localhost:5000";
+  static const String baseUrl = "http://192.168.8.108:3008";
 
   //API Endpoints
 
@@ -17,12 +17,12 @@ class ApiConfig{
   // HTTP Method: POST
   // Sends report to backend, backend extracts event data using Gemini
   // Returns Extracted event JSON
-static const String reportsEndpoint = "/api/reports";
+static const String reportsEndpoint = "/api/make_report";
 // Manually triggers the AI cycle (clustering + brief generation)
   // HTTP Method: POST
   // Backend processes recent events, clusters them, generates brief
   // Returns Updated clusters and latest brief
-static const String cycleEndpoint = "/api/cycle/run";
+static const String cycleEndpoint = "/api/generate-brief";
 // Fetch all current event clusters
   // HTTP Method: GET
   // What it does: Retrieves all active clusters from database
@@ -33,7 +33,7 @@ static const String clustersEndpoint = "/api/clusters";
 static const String clusterByIdEndpoint = "/api/clusters";
 // What it does: Retrieves all briefs ordered by time
   // Returns: Array of brief objects
-static const String latestBriefEndpoint = "/api/briefs/latest";
+static const String latestBriefEndpoint = "/api/briefs";
 
 static const String allBriefsEndpoint = "/api/briefs";
 

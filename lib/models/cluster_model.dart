@@ -25,12 +25,12 @@ class ClusterModel{
 
   factory ClusterModel.fromJson(Map<String, dynamic> json) {
     return ClusterModel(
-      id: json['id'] ?? json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       clusterId: json['cluster_id'] ?? '',
-      label: json['label'] ?? 'Unknown Event',
-      summary: json['summary'] ?? '',
-      severity: json['severity'] ?? 3,
-      confidence: (json['confidence'] ?? 0.5).toDouble(),
+      label: json['cluster_label'] ?? 'Unknown Event',
+      summary: json['cluster_summary'] ?? '',
+      severity: json['cluster_severity_1_to_5'] ?? 3,
+      confidence: (json['cluster_confidence_0_to_1'] ?? 0.5).toDouble(),
       trend: json['trend'] ?? 'stable',
       relatedEventIds: List<String>.from(json['related_event_ids'] ?? []),
       clusterJson: json['cluster_json'],
