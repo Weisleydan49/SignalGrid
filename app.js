@@ -28,7 +28,10 @@ app.get('/', (req, res) => {
 app.use("/api", routes);
 
 // Start server
-app.listen(3008, '0.0.0.0', () => {
-    console.log("Your app is running at http://127.0.0.1:3008");
+
+const PORT = process.env.PORT || 3008;
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
     console.log("Gemini key loaded:", !!process.env.GEMINI_API_KEY);
 });
