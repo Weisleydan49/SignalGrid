@@ -1,13 +1,13 @@
+
 const { Pool } = require('pg');
 
 // Database connection pool
 // Pool manages multiple database connections efficiently
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'signalgrid_db',
-  password: 'Ouma@218',
-  port: 5432,                 // PostgreSQL default port
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Test the database connection
