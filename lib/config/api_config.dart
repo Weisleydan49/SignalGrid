@@ -10,7 +10,7 @@ class ApiConfig{
   // After deployment (when backend is live):
   //   - Replace with actual deployed URL "https://signalgrid-api.onrender.com"
 
-  static const String baseUrl = "http://192.168.8.108:3008";
+  static const String baseUrl = "https://signalgrid.onrender.com";
 
   //API Endpoints
 
